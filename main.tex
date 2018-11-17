@@ -1,0 +1,125 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[english]{babel}
+
+\usepackage{ragged2e}
+\RaggedRight
+
+\usepackage{geometry}
+\geometry{a4paper, top=4cm}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{parskip}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{2mm}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lfoot{T-Systems CH}
+\rfoot{for internal use}
+
+\title{Declarative Configuration Management}
+\author{stefan.steinert@t-systems.com}
+\date{November 2018}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\clearpage
+
+\section{Preamble}
+The idea of declarative state management was not invented by me and has been around for some time. I propose this as an idea because I think it not well understood on average but can bring a lot of value to the table if widely promoted and adopted.
+
+\section{State on a computer system}
+The benefits of a declarative approach to configuration management are not among the easiest topics to outline and require an abstract understanding of the terms \textit{state} and \textit{configuration management} in the context of compter systems.
+
+State is one of the elementary challenges when dealing with computer systems. It is not limited to configutaion managemnt but applies to almost any aspect of running and using computers. Any document that is saved to disk, any configuration file, any content in a database is an example for state.
+
+In software development state is also a major denominator to tell steful and stateless systems apart.
+
+State is useful and necessary but requires tight management of the state to achieve consistency.
+
+Stae is very common on major operating systems. There are also other approach like NixOS (footnote). Although these have a good potential they require all parties to obey to strict and sometimes cumbersome rules. This is not easily achieved especially in a corporate environment where multiple people  are usually managing certain aspects of a system.
+
+Is the foundation of consistency and redundancy problems. E.g. multiple versions of a document.
+
+
+State management is also important in software development. The problem has been solved there by applying version control systems.
+
+Managed stae vs. unmaged state
+
+Managing state with version control
+
+Apply version control semantics to configuration managemnt
+
+
+
+(Configuration-) \textbf{State} on a computer is the set of persistent artifacts which govern the computers capabilities and behaviour. It can help understanding to think of it as a database. In a similar way that the database content defines what results will be retrieved from it, the state of a computer defines how it will behave and what activities it will be able to perform. On an abstract level a significant part of the computer can be thought of as a \textit{collection of state}.
+
+However not all events in the lifetime of a system are beneficially described as \textit{state}. For example a regularly repeated deployment of new versions of a customer application is not a good candidate to be described in such a way. It rather expresses a recurring modification with non-identical outcome (i.e. with varying state) and is better described in ways which do not emphasize on maintaining state.
+
+\textbf{Configuration management} is the process of maintaining a defined state. E.g. to ensure that certain directories exist with certain permissions, certain files have certain content, certain services are running and so forth. The purpose of configuration management is to ensure consistent and deterministic behaviour of the computer.
+
+\vspace{0.5cm}
+\begin{minipage}{\textwidth}
+Important requirements towards the state of a computer system are:
+
+\begin{itemize}
+  \item it should be consistent throughout all participating systems
+  \item it should be testable (i.e. "What will be the effect if I apply this modification?")
+  \item it should be stageable (i.e. "change non-prod first, then change prod in the exact same way") with minimal potential of error
+  \item it should be robust and reliable
+  \item but it should also be easily modifiable with minimal effort so that it can evolve over time
+\end{itemize}
+\end{minipage}
+\vspace{0.5cm}
+
+It is also important to accept the fact that nothing in software is ever completely done. Anything can be improved virtually forever. The question is rather how much value a modification adds versus how much it costs (i.e. how much effort is required to perform the modification).
+
+\section{Approaches to managing configuration}
+There are two fundamentally different approaches to managing (i.e. creating, altering and maintaining) the configuration state of a computer system.
+
+The first - more widespread and traditional - way to think about state-change is to write down the steps required for the transition. "Create this directory, create a file with that content, ...". This approach can be termed "imperative" as it is a list of commands required to modify the state from A to B. Typical examples for such an implementation is the use of scripts written in languages like bash or python. This technique often feels more natural to people because it resembles the way in which we are used to interact with the world in general. We execute an action. We receive a result.
+
+The second way to think about state is to create a formal model describing the should-be state that the machine is supposed to be in. And let the machine figure out the required steps to reach that state at runtime by itself. Instead of describing the transition it describes the aim. This approach is commonly called "declarative" as it is based on a formal description of the desired state against which the actual computer state is compared. Examples of tools which implement this strategy are Puppet or Salt.
+
+\section{Advantages of declarative state}
+While the differences between these two approaches might seem minor at first glance there are important aspects which make the declarative approach superior in several ways:
+
+\begin{itemize}
+  \item A declarative model guarantees a certain state on the system. No guesswork required. In an imperative approach state B cannot be guaranteed because state A is not guaranteed. A lot of effort today goes into trying to emulate this guarantee by applying restrictive access rules and relying on traditional change-management methodologies. However that approach continues to fail every single day.
+
+  \item The declarative state can be easily and continuously adopted and improved by changing the declarative model. The model will stay valid and guaranteed for all managed systems no matter their age. In the lifetime of the model it becomes increasingly simple and decreasingly frequent to change it. In contrast the imperative approach becomes increasingly hard to maintain over time due to the increasing number of possible states and lack of a common, homogenous, descriptive model.
+
+  \item The overall system state can be composed from modules. By cleverly cutting the declarative model into separate modules, the overall state of the system can be compiled from individual components. These modules can be independently created and maintained by different subject matter experts or different teams. Other technicians can use the provided modules without requiring them to have much detail knowledge of that subject. They can act as "consumers". In an imperative approach such "consumable modules" are almost impossible to build because it usually requires a consumer to either understand the subject matter experts code or dig through (often poorly maintained) documentation. Most typically it even requires both which then quickly leads to reimplementations on the consumers end.
+
+  \item A declarative approach encourages collaboration among people and teams because conflicts in state do necessarily pop up. E.g. team X wants to manage the same thing as team Y. Such overlaps (which are the direct result of a lack of communication) result in computational runtime errors complaining about duplicate declaration. This in turn forces the parties to communicate and find a  common solution, be it technical or organizational. In an imperative approach such conflicts typically go unnoticed until someone detects that his components are not working as expected. While finally this probably yields the same end result it is far more difficult to detect and creates an atmosphere of distrust and the desire for restrictiveness.
+
+  \item No additional documentation regarding the system state is required. The declarative model already is a precise and complete description of the relevant system state. Implementation and documentation no longer happen to be two (technically) unrelated entities. They become a single entity.
+
+  \item The declarative model enforces a "document first" approach because the state of the system can only be changed by first changing the model (i.e. by changing the documentation).
+
+  \item A declarative model can serve as a broadly useful, semi-technical documentation. It is expressive and precise to technicians as well as to computers. But it can be illustrative to non-technicians, too. By applying transformations the model can always be converted into less detailed and more presentable / more descriptive forms anytime if desired. This does not hold true for an imperative approach where the code which performs the state transformation cannot be converted into anything meaningful in an automated and generalizable fashion.
+\end{itemize}
+
+\section{Lessons learned}
+We are applying this idea internally to lots of our systems since long and achieved good time savings and synergies with it. By managing the declarative model within a commonly accessible version control mechanism (e.g. git services like GitLab or Bitbucket) all of this evolving and modularized state is precisely documented and historicized from the very beginning until the present moment and down to the smallest detail. Among other benefits this is a great source to learn from and to avoid making mistakes twice.
+
+Staging of configuration changes has become robust and intuitive as it is performed by simply merging branches in the version control system. Changes are perfectly reproduced throughout stages. To extend this further we are about to attach a CI-controlled Docker build-and-test pipeline which enables testability without even touching any real system.
+
+To us this approach has proven to exceed the informative value of other - typically manual - ways to document the process (like hand-written documents and generic change processes) by far.
+
+I think the approach would specifically excel if applied to a broader base of people, teams and systems. Internally (i.e. for T-Systems own purposes) and also externally (i.e. for customers).
+
+\section{Proposal}
+This brings it to the point of my proposal. I think the above advantages make this a perfect choice for a real-world, internal- as well as customer-facing service. Offering computer instances managed based on declarative configuration management will erect a transparent, traceable and reproducible way to define a good part of what a system should provide. The state (and thereby much of the functionality) of a system could be composed of readily available T-Systems modules in combination with purpose-built customer specific modules created and maintained collaboratively by T-Systems- and customer-engineers, all perfectly documented using version control systems.
+
+I'd say many customers (read: the customers technical staff) will see this kind of transparent and reproducible stewardship as a value-add. Especially if we consider that the problem of state management keeps increasing significantly due to the ever increasing number of deployed systems.
+
+\end{document}
