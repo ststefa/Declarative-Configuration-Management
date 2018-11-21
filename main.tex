@@ -19,13 +19,18 @@
 
 \usepackage{hyperref}
 \hypersetup{
-    hidelinks=true,       % false: boxed links; true: colored links
+    hidelinks
 }
+
+\usepackage{needspace}  % prevent page break right after a sectioning command
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
+\setlength{\headheight}{20pt}
 \lfoot{T-Systems CH}
 \rfoot{for internal use}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
 
 \title{Declarative Configuration Management}
 \author{stefan.steinert@t-systems.com}
