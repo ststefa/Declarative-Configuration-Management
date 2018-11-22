@@ -25,9 +25,9 @@
 \renewcommand{\footrulewidth}{0.4pt}
 
 \usepackage{hyperref}
-%\hypersetup{
-%    hidelinks
-%}
+\hypersetup{
+    hidelinks
+}
 
 
 \usepackage[utf8]{inputenc}
@@ -36,7 +36,7 @@
 
 \title{Declarative Configuration Management}
 \author{stefan.steinert@t-systems.com}
-\date{v1.0.3, November 2018}
+\date{v1.0.4, November 2018}
 
 \begin{document}
 
@@ -54,7 +54,7 @@ State-related topics are an elementary challenge in handling computer systems an
 
 State is commonly found in most major operating systems \footnote{Other approaches like \url{https://www.nixos.org} exist. It aims to avoid state as much as possible on a low level. Although this is a promising idea it is not very mature yet and has its own set of challenges.}. It is useful and necessary to define and customize the computers behaviour. On an abstract level a significant part of the computer can be thought of as a \textit{collection of states}. This state is not easily reproducible and thus requires tight management to ensure consistent behaviour.
 
-At the same time it is important to recognize that everything in software is constantly changing. Anything can be improved virtually forever. The question is rather how much value a modification adds versus how much it costs (i.e. how much effort is required to perform the modification). It is hence important that applying change is an inexpensive operation. Otherwise systems cannot evolve to their optimum.
+At the same time it is important to recognize that everything in software is constantly changing. Anything can be improved virtually forever. The question is rather how much value a modification adds versus how much it costs (i.e. how much effort is required to perform the modification). It is hence important that applying change is an inexpensive operation. Otherwise a system cannot evolve to its optimum.
 
 
 \vspace{0.5cm}
@@ -71,12 +71,12 @@ Important requirements towards the state of a computer system are:
 \end{minipage}
 \vspace{0.5cm}
 
-State is also a common organizational topic in software development where essentially a group of people works together on a set of files to build an application. The more people are involved in this process the more complex the collaboration becomes, largely due to conflicting changes to the files. For decades this has been supported through the use of version control systems. They guarantee a consistent state where conflicting changes can be precisely tracked and resolved. It is a good example of how state problems can be alleviated by using managed state instead of unmanaged state. It seems to be a good idea to apply similar mechanisms to state management. 
+State is also a common organizational topic in software development where essentially a group of people works together on a set of files to build an application. The more people are involved in this process the more complex the collaboration becomes, largely due to conflicting changes to the files. For decades this has been supported through the use of version control systems. They guarantee a consistent state where conflicting changes can be precisely tracked and resolved. It is a good example of how state problems can be alleviated by using managed state instead of unmanaged state. It seems to be a good idea to apply similar mechanisms to configuration management. 
 
 Not all events in the lifetime of a system are beneficially described as state. For example, repeating deployments of new versions of customer applications are not a good candidate to be described in this way. Instead these are recurring modifications with non-identical outcome (i.e. with varying state). Such activities are better described in ways which do not emphasize on maintaining state but instead on describing the (constant) \textit{transition}.
 
 \section{Approaches to managing configuration}
-There are two fundamentally different approaches to managing (i.e. creating, altering and maintaining) the configuration state of a computer system.
+Apart from manual activities (which are inherently prone to human error) there are two fundamentally different approaches to managing (i.e. creating, altering and maintaining) the configuration state of a computer system.
 
 The first - more widespread and traditional - way to think about state-change is to write down the steps required for the transition. "Create this directory, create a file with that content, ...". This approach can be termed "imperative" as it is a list of commands required to modify the state from A to B. Typical examples for such an implementation is the use of scripts written in languages like Bash or Python. This technique often feels more natural because it resembles the way in which we are used to interact with the world in general. We execute an action. We receive a result.
 
