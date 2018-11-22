@@ -1,9 +1,8 @@
 \documentclass[12pt, a4paper]{article}
 
-\usepackage[english]{babel}
-
-\usepackage{ragged2e}
-\RaggedRight
+%\usepackage{ragged2e}
+%\RaggedRight
+%\FlushRight
 
 \usepackage{geometry}
 \geometry{a4paper, top=4cm}
@@ -15,13 +14,6 @@
 \setlength{\parindent}{1cm}
 \setlength{\parskip}{2mm}
 
-\usepackage[utf8]{inputenc}
-
-\usepackage{hyperref}
-\hypersetup{
-    hidelinks
-}
-
 \usepackage{needspace}  % prevent page break right after a sectioning command
 
 \usepackage{fancyhdr}
@@ -32,55 +24,63 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
+\usepackage{hyperref}
+%\hypersetup{
+%    hidelinks
+%}
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[english]{babel}
+
 \title{Declarative Configuration Management}
 \author{stefan.steinert@t-systems.com}
-\date{November 2018}
+\date{v1.0.3, November 2018}
 
 \begin{document}
+
 \maketitle
-
 \tableofcontents
-
 \clearpage
 
 \section{Preamble}
 The idea of declarative state management was not invented by me and has been around for some time. I propose this as an idea because I think it not well understood on average but can bring a lot of value to the table if widely promoted and adopted.
 
 \section{State on a computer system}
-The benefits of a declarative approach to configuration management might not be immediately obvious and mainly require an abstract understanding of the term \textit{state} in the context of managing computer systems.
+The benefits of a declarative approach to configuration management might not be immediately obvious and mainly requires an abstract understanding of the term \textit{state} in the context of managing computer systems.
 
-State-related topics are an elementary challenge in handling computer systems and are commonly found in their architectures. Some systems (e.g. databases) are termed \textit{stateful} while others (e.g. application servers) are referred to as \textit{stateless} . However this is not an either/or classification. Rather it is a gradual difference and mainly refers to the \textit{value} of the state. This value is an expression of the effort required to reproduce it. I.e. if state is very hard (or even impossible) to reproduce then the system can be described as \textit{very stateful}. Stateless systems are generally easier to handle because certain (often complicated) topics do not apply to them. State always has to be taken care of, leading to additional requirements to an architecture like consistency or reentrancy.
+State-related topics are an elementary challenge in handling computer systems and are commonly found in their architectures. Some systems (e.g. databases) are termed \textit{stateful} while others (e.g. application servers) are referred to as \textit{stateless}. However this is not an either/or classification. Rather it is a gradual difference and mainly refers to the value of the state. This value is an expression of the effort required to reproduce it. I.e. if state is very hard (or even impossible) to reproduce then the system can be described as \textit{(very) stateful}. Stateless systems are generally easier to handle because several - often complicated - topics do not apply to them. State always has to be taken care of, leading to additional requirements to an architecture like consistency, reentrancy or reproducibility.
 
-State is commonly used in most major operating systems \footnote{Other approaches like \url{https://www.nixos.org} exist. It aims to avoid state as much as possible on a low level. Although this is a promising idea it is not very mature yet and has its own set of challenges.}. It is useful and necessary to define and customize the computers behaviour. On an abstract level a significant part of the computer can be thought of as a \textit{collection of states}. This state is not easily reproducible and thus requires tight management to ensure consistent behaviour.
+State is commonly found in most major operating systems \footnote{Other approaches like \url{https://www.nixos.org} exist. It aims to avoid state as much as possible on a low level. Although this is a promising idea it is not very mature yet and has its own set of challenges.}. It is useful and necessary to define and customize the computers behaviour. On an abstract level a significant part of the computer can be thought of as a \textit{collection of states}. This state is not easily reproducible and thus requires tight management to ensure consistent behaviour.
+
+At the same time it is important to recognize that everything in software is constantly changing. Anything can be improved virtually forever. The question is rather how much value a modification adds versus how much it costs (i.e. how much effort is required to perform the modification). It is hence important that applying change is an inexpensive operation. Otherwise systems cannot evolve to their optimum.
+
 
 \vspace{0.5cm}
 \begin{minipage}{\textwidth}
 Important requirements towards the state of a computer system are:
 
 \begin{itemize}
-  \item it should be consistent throughout all participating systems
-  \item it should be robust and reliable
+  \item it should be robust and predictable
   \item but it should also be easily modifiable with minimal effort so that it can evolve over time
+  \item it should be consistent throughout a group of related systems no matter the point in time a system is added to the group
   \item it should be stageable (i.e. "change non-prod first, then change prod in the exact same way") with minimal potential of error
   \item it should be testable (i.e. "What will be the effect if I apply this modification?")
 \end{itemize}
 \end{minipage}
 \vspace{0.5cm}
 
-\section{More on state}
-Not all events in the lifetime of a system are beneficially described as state. For example repeated deployments of new versions of customer applications are not a good candidate to be described in this way. By their very nature these are recurring modifications with non-identical outcome (i.e. with varying state). Such activities are better described in ways which do not emphasize on maintaining state but instead on describing the (constant) \textit{transition}.
+State is also a common organizational topic in software development where essentially a group of people works together on a set of files to build an application. The more people are involved in this process the more complex the collaboration becomes, largely due to conflicting changes to the files. For decades this has been supported through the use of version control systems. They guarantee a consistent state where conflicting changes can be precisely tracked and resolved. It is a good example of how state problems can be alleviated by using managed state instead of unmanaged state. It seems to be a good idea to apply similar mechanisms to state management. 
 
-State-topics are also common to the area of software development where essentially a group of people works together on a set of files to build an application. The more people are involved in this process the more complex the collaboration becomes. For decades this has been handled through the use of version control systems. They guarantee a consistent state where conflicting changes can be precisely analyzed and resolved. It is a good example of how the state problem can be alleviated by using managed state instead of unmanaged state.
-
-
-It is also important to accept the fact that nothing in software is ever completely done. Anything can be improved virtually forever. The question is rather how much value a modification adds versus how much it costs (i.e. how much effort is required to perform the modification).
+Not all events in the lifetime of a system are beneficially described as state. For example, repeating deployments of new versions of customer applications are not a good candidate to be described in this way. Instead these are recurring modifications with non-identical outcome (i.e. with varying state). Such activities are better described in ways which do not emphasize on maintaining state but instead on describing the (constant) \textit{transition}.
 
 \section{Approaches to managing configuration}
 There are two fundamentally different approaches to managing (i.e. creating, altering and maintaining) the configuration state of a computer system.
 
-The first - more widespread and traditional - way to think about state-change is to write down the steps required for the transition. "Create this directory, create a file with that content, ...". This approach can be termed "imperative" as it is a list of commands required to modify the state from A to B. Typical examples for such an implementation is the use of scripts written in languages like Bash or Python. This technique often feels more natural to people because it resembles the way in which we are used to interact with the world in general. We execute an action. We receive a result.
+The first - more widespread and traditional - way to think about state-change is to write down the steps required for the transition. "Create this directory, create a file with that content, ...". This approach can be termed "imperative" as it is a list of commands required to modify the state from A to B. Typical examples for such an implementation is the use of scripts written in languages like Bash or Python. This technique often feels more natural because it resembles the way in which we are used to interact with the world in general. We execute an action. We receive a result.
 
-The second way to think about state is to create a formal model describing the \textit{should-be} state that the machine is \textit{supposed} to be in. And let the machine figure out the required steps to reach that state at run-time by itself. Instead of describing the transition it describes the aim. This approach is commonly called "declarative" as it is based on a formal description of the desired state against which the computers current state is compared, typically in intervals. Examples of tools which implement this strategy are Puppet or Salt.
+The second way to think about state is to create a formal model describing the \textit{should-be} state that the machine is \textit{supposed} to be in. And let the machine figure out the required steps to reach that state at run-time by itself. Instead of describing the transition it describes the aim. This approach is commonly called "declarative" as it is based on a formal description of the desired state. The current state of the computer is then (typically in intervals) compared against and adjusted to that state. Examples of tools which implement this strategy are Puppet or Salt.
 
 \section{Advantages of declarative state}
 While the differences between these two approaches might seem minor at first glance there are important aspects which make the declarative approach superior in several ways:
